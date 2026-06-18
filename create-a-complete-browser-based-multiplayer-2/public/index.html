@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nebula Social Deduction | Social Deduction Command Deck</title>
+  <meta name="theme-color" content="#071018" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-orbit bg-orbit-a"></div>
+  <div class="bg-orbit bg-orbit-b"></div>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">
+          <span></span><span></span><span></span>
+        </div>
+        <div>
+          <div class="brand-title">Nebula Social Deduction</div>
+          <div class="brand-subtitle">Original multiplayer social deduction engine</div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="ghost" id="soundToggle">Sound On</button>
+        <button class="ghost" id="profileToggle">Profile</button>
+      </div>
+    </header>
+
+    <main id="app" class="app-grid">
+      <section class="hero-card">
+        <div class="hero-copy">
+          <div class="eyebrow">Live room control</div>
+          <h1>Build a table, assign roles, survive the night.</h1>
+          <p>
+            Create private rooms, queue for quick play, chat through the day, hide in the shadows at night,
+            and track your progression through XP, achievements, and match history.
+          </p>
+          <div class="hero-metrics">
+            <div class="metric"><span>6-20</span><small>players</small></div>
+            <div class="metric"><span>Real-time</span><small>multiplayer</small></div>
+            <div class="metric"><span>Night actions</span><small>with blockers</small></div>
+          </div>
+          <div class="hero-actions">
+            <button class="primary" id="quickPlayBtn">Quick Play</button>
+            <button class="secondary" id="createRoomBtn">Create Room</button>
+          </div>
+        </div>
+        <div class="hero-art">
+          <div class="orbital-card">
+            <div class="orbital-ring"></div>
+            <div class="orbital-core"></div>
+            <div class="orbital-pulse"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel auth-panel" id="authPanel">
+        <div class="panel-header">
+          <h2>Account</h2>
+          <span id="authState">Guest mode</span>
+        </div>
+        <div class="tabs">
+          <button class="tab active" data-auth-tab="login">Login</button>
+          <button class="tab" data-auth-tab="register">Register</button>
+        </div>
+        <form id="authForm" class="stack">
+          <input id="authUsername" placeholder="Username" autocomplete="username" />
+          <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password" />
+          <button class="primary" type="submit">Continue</button>
+        </form>
+        <div class="tiny" id="authHint">Register or log in to unlock profile, friends, and persistent stats.</div>
+      </section>
+
+      <section class="panel controls-panel">
+        <div class="panel-header">
+          <h2>Room Controls</h2>
+          <span id="socketState">Disconnected</span>
+        </div>
+        <div class="stack">
+          <input id="roomCodeInput" maxlength="6" placeholder="Room code" />
+          <div class="inline-actions">
+            <button class="secondary" id="joinRoomBtn">Join Room</button>
+            <button class="secondary" id="matchmakingBtn">Matchmake</button>
+          </div>
+          <div class="settings-grid">
+            <label>Room Name<input id="roomNameInput" placeholder="Nebula Room" /></label>
+            <label>Players<input id="maxPlayersInput" type="number" min="6" max="20" value="12" /></label>
+            <label>Day (sec)<input id="dayLengthInput" type="number" min="45" max="180" value="90" /></label>
+            <label>Night (sec)<input id="nightLengthInput" type="number" min="20" max="120" value="45" /></label>
+          </div>
+          <button class="primary" id="createRoomSecondaryBtn">Create Custom Room</button>
+        </div>
+      </section>
+
+      <section class="panel rooms-panel">
+        <div class="panel-header">
+          <h2>Live Rooms</h2>
+          <button class="ghost" id="refreshRoomsBtn">Refresh</button>
+        </div>
+        <div id="roomsList" class="rooms-list"></div>
+      </section>
+
+      <section class="panel encyclopedia-panel">
+        <div class="panel-header">
+          <h2>Role Encyclopedia</h2>
+          <span id="roleCount">0 roles</span>
+        </div>
+        <div id="roleCatalog" class="role-catalog"></div>
+      </section>
+    </main>
+
+    <section id="roomScreen" class="room-screen hidden">
+      <aside class="sidebar">
+        <div class="panel">
+          <div class="panel-header">
+            <h2 id="roomTitle">Room</h2>
+            <span id="roomPhase">Lobby</span>
+          </div>
+          <div class="room-code-row">
+            <div class="room-code" id="roomCodeLabel">------</div>
+            <button class="ghost" id="copyRoomCode">Copy</button>
+          </div>
+          <div id="roomMeta" class="meta-list"></div>
+          <div class="inline-actions">
+            <button class="secondary" id="readyBtn">Ready</button>
+            <button class="secondary" id="startBtn">Start</button>
+          </div>
+          <div class="stack">
+            <button class="ghost" id="leaveBtn">Leave Room</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Players</h2>
+            <span id="playerCount">0</span>
+          </div>
+          <div id="playerList" class="player-list"></div>
+        </div>
+      </aside>
+
+      <section class="table-stage">
+        <div id="phaseBanner" class="phase-banner"></div>
+        <div class="board-grid">
+          <article class="panel game-panel">
+            <div class="panel-header">
+              <h2>Table</h2>
+              <span id="dayCounter">Day 0</span>
+            </div>
+            <div id="roleReveal" class="role-reveal hidden"></div>
+            <div id="actionPanel" class="stack"></div>
+          </article>
+          <article class="panel chat-panel">
+            <div class="panel-header">
+              <h2>Chat</h2>
+              <select id="chatChannel">
+                <option value="public">Public</option>
+                <option value="whisper">Whisper</option>
+                <option value="dead">Dead</option>
+                <option value="mafia">Mafia</option>
+                <option value="cult">Cult</option>
+                <option value="spectator">Spectator</option>
+              </select>
+            </div>
+            <div id="chatLog" class="chat-log"></div>
+            <form id="chatForm" class="chat-form">
+              <input id="chatTarget" placeholder="Target ID for whisper" />
+              <input id="chatInput" placeholder="Say something..." maxlength="240" />
+              <button class="primary" type="submit">Send</button>
+            </form>
+          </article>
+        </div>
+        <article class="panel log-panel">
+          <div class="panel-header">
+            <h2>Game Log</h2>
+            <button class="ghost" id="autoScrollBtn">Auto Scroll</button>
+          </div>
+          <div id="gameLog" class="game-log"></div>
+        </article>
+      </section>
+    </section>
+  </div>
+
+  <div id="modalRoot" class="modal-root hidden"></div>
+  <script src="socket.io/socket.io.js"></script>
+  <script src="client.js"></script>
+</body>
+</html>
